@@ -6,8 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
+# Distribution / packaging,
 .Python
+rest/migrations/
 build/
 develop-eggs/
 dist/

@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'django_extensions',
+    'django_webserver',
     'rest_framework',
     'rest_framework.authtoken',
     'mptt',
-    'workflow.wfapp',
+    'rest',
     'autofixture',
 ]
 
@@ -58,7 +59,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'workflow.urls'
+ROOT_URLCONF = 'urls'
 
 ENCRYPTED_FIELD_KEYS_DIR = '.'
 
@@ -78,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'workflow.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 
 # Database
@@ -122,8 +123,8 @@ AUTHENTICATION_BACKENDS = (
 # AUTH_USER_MODEL = "rest.User"
 # AUTH_PROFILE_MODULE = 'rest.UserProfile'
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'cmdb.rest.exception_handler.custom_exception_handler',
-    'DEFAULT_PAGINATION_CLASS': 'cmdb.rest.pagination.CustomPageNumberPagination',
+    'EXCEPTION_HANDLER': 'rest.exception_handler.custom_exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'rest.pagination.CustomPageNumberPagination',
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'PAGE_SIZE': 20,
     'DEFAULT_AUTHENTICATION_CLASSES': (
