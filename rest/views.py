@@ -102,3 +102,19 @@ class WorkflowViewSet(viewsets.ModelViewSet):
         }
         serializer = StepSerializer(w.steps(), context=serializer_context,  many=True)
         return Response(serializer.data)
+
+
+class StepViewSet(viewsets.ModelViewSet):
+    queryset = Step.objects.all()
+    serializer_class = StepSerializer
+    # queryset_detail = queryset.prefetch_related('workflowtemplate')
+
+    @action(methods=['get'], detail=True)
+    def approve(self, request, *args, **kwargs):
+        w = self.get_object()
+        serializer_context = {
+            'request': request,
+        }
+        w.approve()
+        serializer = StepSerializer(w, context=serializer_context,  many=False)
+        return Response(serializer.data)

@@ -29,6 +29,8 @@ router = routers.DefaultRouter()
 router.register(r'step-define', views.StepDefineViewSet)
 router.register(r'workflow-template', views.WorkflowTemplateViewSet)
 router.register(r'workflow', views.WorkflowViewSet)
+router.register(r'step', views.StepViewSet)
+
 
 
 

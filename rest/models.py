@@ -125,21 +125,32 @@ class Step(BaseConcurrentModel):
     step_return = JSONField(default={})
     from_step = models.ForeignKey('Step', null=True, on_delete=models.PROTECT)
 
+    def approve(self):
+        with transaction.atomic():
+            # self.step_return['before_commit'] = {}
+            # for i, h in enumerate(self.step_define.before_commit):
+            #     result = h.run(self.arguments)
+            #     self.step_return['before_commit'][i] = result
+            print(self.step_define.success_stepdefines.all())
+            for s in self.step_define.success_stepdefines.all():
+                Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
+            self.step_status = 'success'
+
     def commit(self):
         with transaction.atomic():
-            self.step_return['before_commit'] = {}
-            for i, h in enumerate(self.step_define.before_commit):
-                result = h.run(self.arguments)
-                self.step_return['before_commit'][i] = result
-
-            for s in self.step_define.commit_stepdefines:
-                self.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
+            # self.step_return['before_commit'] = {}
+            # for i, h in enumerate(self.step_define.before_commit):
+            #     result = h.run(self.arguments)
+            #     self.step_return['before_commit'][i] = result
+            print(self.step_define.commit_stepdefines)
+            for s in self.step_define.commit_stepdefines.all():
+                Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
 
     def reject(self):
         with transaction.atomic():
-            self.step_return['before_reject'] = {}
-            for i, h in enumerate(self.step_define.before_commit):
-                result = h.run(self.arguments)
-                self.step_return['before_reject'][i] = result
-            for s in self.step_define.reject_stepdefines:
-                self.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
+            # self.step_return['before_reject'] = {}
+            # for i, h in enumerate(self.step_define.before_commit):
+            #     result = h.run(self.arguments)
+            #     self.step_return['before_reject'][i] = result
+            for s in self.step_define.reject_stepdefines.all():
+                Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
