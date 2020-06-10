@@ -84,7 +84,7 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
     queryset = WorkflowTemplate.objects.all()
     serializer_class = WorkflowTemplateSerializer
     serializer_detail_class = WorkflowTemplateDetailSerializer
-    queryset_detail = queryset.prefetch_related('workflowtemplate')
+    # queryset_detail = queryset.prefetch_related('workflowtemplate')
     #filter_backends = (OrderingFilter,)
 
 
@@ -92,7 +92,7 @@ class WorkflowViewSet(viewsets.ModelViewSet):
     queryset = Workflow.objects.all()
     serializer_class = WorkflowSerializer
     serializer_detail_class = WorkflowTemplateDetailSerializer
-    queryset_detail = queryset.prefetch_related('workflowtemplate')
+    # queryset_detail = queryset.prefetch_related('workflowtemplate')
 
     @action(methods=['get'], detail=True)
     def steps(self, request, *args, **kwargs):
