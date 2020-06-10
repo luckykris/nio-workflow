@@ -26,8 +26,10 @@ from rest_framework_extensions.routers import ExtendedSimpleRouter
 # )
 
 router = routers.DefaultRouter()
-router.register(r'step_define', views.StepDefineViewSet)
-router.register(r'workflow_template', views.WorkflowTemplateViewSet)
+router.register(r'step-define', views.StepDefineViewSet)
+router.register(r'workflow-template', views.WorkflowTemplateViewSet)
+router.register(r'workflow', views.WorkflowViewSet)
+
 
 
 urlpatterns = [

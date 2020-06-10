@@ -14,7 +14,7 @@
     "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml"
   },
   "dependencies": {
-    "axios": "0.18.0",
+    "axios": "^0.19.2",
     "element-ui": "2.4.6",
     "extract-text-webpack-plugin": "^3.0.2",
     "gojs": "^2.0.8",
@@ -38,8 +38,8 @@
     "babel-preset-env": "1.7.0",
     "babel-preset-stage-2": "6.24.1",
     "chalk": "2.4.1",
-    "compression-webpack-plugin": "2.0.0",
-    "copy-webpack-plugin": "4.5.2",
+    "compression-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^6.0.2",
     "css-loader": "1.0.0",
     "eslint": "4.19.1",
     "eslint-friendly-formatter": "4.0.1",
@@ -71,9 +71,9 @@
     "vue-loader": "15.3.0",
     "vue-style-loader": "4.1.2",
     "vue-template-compiler": "2.5.17",
-    "webpack": "^3.1.0",
+    "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.3.2",
-    "webpack-cli": "3.1.0",
+    "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.1.14",
     "webpack-merge": "4.1.4"
   },

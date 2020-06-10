@@ -1,9 +1,10 @@
 from django.db import models, transaction
 from concurrency.fields import IntegerVersionField
-from django_extensions.db.fields.json import JSONField
+from jsonfield import JSONField
 from polymorphic.models import PolymorphicModel
 from polymorphic.managers import PolymorphicManager
 import requests
+from .toolkits import gen_uuid
 
 
 class BaseConcurrentModel(models.Model):
@@ -88,13 +89,26 @@ class ArgumentDefine(BaseConcurrentModel):
 
 
 class Workflow(models.Model):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(auto_created=True, primary_key=True, default=gen_uuid, editable=False)
     _version = IntegerVersionField()
     _ctime = models.DateTimeField(auto_now_add=True)
     _mtime = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=255)
+    arguments = JSONField(default={})
     workflow_template = models.ForeignKey(WorkflowTemplate, on_delete=models.PROTECT)
 
+    def create_start_step(self):
+        Step.objects.create(
+            step_define=self.workflow_template.start_step_define,
+            workflow=self,
+            arguments=self.arguments,
+            step_status='waiting',
+            from_step=None
+        )
+
+    def steps(self):
+        steps = Step.objects.filter(workflow=self)
+        return steps
 
 
 class Step(BaseConcurrentModel):

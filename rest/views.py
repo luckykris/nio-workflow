@@ -75,7 +75,7 @@ class StepDefineViewSet(viewsets.ModelViewSet):
         return Response({'success', True})
 
 
-class WorkflowTemplateViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
+class WorkflowTemplateViewSet(viewsets.ModelViewSet):
     # authentication_classes = (authentication.JWTAuthentication,)
     #permission_classes = (permissions.IsAuthenticated,)
     """
@@ -87,3 +87,18 @@ class WorkflowTemplateViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
     queryset_detail = queryset.prefetch_related('workflowtemplate')
     #filter_backends = (OrderingFilter,)
 
+
+class WorkflowViewSet(viewsets.ModelViewSet):
+    queryset = Workflow.objects.all()
+    serializer_class = WorkflowSerializer
+    serializer_detail_class = WorkflowTemplateDetailSerializer
+    queryset_detail = queryset.prefetch_related('workflowtemplate')
+
+    @action(methods=['get'], detail=True)
+    def steps(self, request, *args, **kwargs):
+        w = self.get_object()
+        serializer_context = {
+            'request': request,
+        }
+        serializer = StepSerializer(w.steps(), context=serializer_context,  many=True)
+        return Response(serializer.data)
