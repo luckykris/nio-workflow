@@ -7,28 +7,33 @@ import requests
 from .toolkits import gen_uuid
 
 
+# 一致性基类
 class BaseConcurrentModel(models.Model):
     _version = IntegerVersionField()
     _ctime = models.DateTimeField(auto_now_add=True)
     _mtime = models.DateTimeField(auto_now=True)
 
 
+# hook验证配置基类
 class HookAuth(BaseConcurrentModel):
     name = models.CharField(primary_key=True, max_length=255)
     objects = PolymorphicManager()
 
 
+# hook验证配置 - token
 class TokenAuth(HookAuth):
     token = models.CharField(max_length=255)
     header = models.CharField(max_length=255, default='Authorization')
     prefix = models.CharField(max_length=255, default='Token')
 
 
+# hook配置基类
 class Hook(PolymorphicModel, BaseConcurrentModel):
     name = models.CharField(primary_key=True, max_length=255)
     objects = PolymorphicManager()
 
 
+# hook配置基类 - http hook
 class HttpHook(Hook):
     methods = (('get', 'get'), ('put', 'put'), ('post', 'post'), ('delete', 'delete'))
     api = models.CharField(max_length=255)
@@ -41,11 +46,13 @@ class HttpHook(Hook):
             raise KeyError("no method is named %r in requests module" % self.method)
 
 
+# 流程模版
 class WorkflowTemplate(BaseConcurrentModel):
     name = models.CharField(max_length=255)
     start_step_define = models.ForeignKey('StepDefine', on_delete=models.SET_NULL, null=True)
 
 
+# 流程步骤定义
 class StepDefine(BaseConcurrentModel):
     workflow_template = models.ForeignKey(WorkflowTemplate, on_delete=models.CASCADE, related_name="step_defines")
     name = models.CharField(max_length=255)
@@ -80,6 +87,7 @@ class StepDefine(BaseConcurrentModel):
         ).all()
 
 
+# 步骤参数定义
 class ArgumentDefine(BaseConcurrentModel):
     argument_types = (('int', 'int'), ('string', 'string'), ('choice', 'choice'), ('text', 'text'))
     name = models.CharField(max_length=255)
@@ -88,14 +96,31 @@ class ArgumentDefine(BaseConcurrentModel):
     step_define = models.ForeignKey(StepDefine, on_delete=models.CASCADE, related_name='arguments')
 
 
+#  实际工单
 class Workflow(models.Model):
+    workflow_status_choices = (
+        ('submit', 'submit'), # 提交
+        ('revoke', 'revoke'), # 撤回
+        ('close', 'close'), # 完成关闭
+        ('terminate', 'terminate'), # 中止
+        ('processing', 'processing'), # 流程中
+    )
     id = models.UUIDField(auto_created=True, primary_key=True, default=gen_uuid, editable=False)
     _version = IntegerVersionField()
     _ctime = models.DateTimeField(auto_now_add=True)
     _mtime = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=255)
+    workflow_status = models.CharField(choices=workflow_status_choices, max_length=255, default='submit')
     arguments = JSONField(default={})
     workflow_template = models.ForeignKey(WorkflowTemplate, on_delete=models.PROTECT)
+
+    # TODO: 判断整体工单状态, 变更工单的状态
+    def if_close(self):
+        pass
+
+    # TODO: 判断整体工单状态, 变更工单的状态
+    def if_terminate(self):
+        pass
 
     def create_start_step(self):
         Step.objects.create(
@@ -111,10 +136,20 @@ class Workflow(models.Model):
         return steps
 
 
+# 实际工单步骤
 class Step(BaseConcurrentModel):
+    """
+        TODO:
+        工单步骤状态机:
+        commit流程: waiting -> running -> success
+                                      -> fail
+        approve流程：waiting -> success
+                            -> reject
+    """
     step_status_choices = (
         ('waiting', 'waiting'),
         ('running', 'running'),
+        ('reject', 'reject'),
         ('success', 'success'),
         ('fail', 'fail'),
     )
@@ -125,32 +160,32 @@ class Step(BaseConcurrentModel):
     step_return = JSONField(default={})
     from_step = models.ForeignKey('Step', null=True, on_delete=models.PROTECT)
 
+    # 批准通过流程
     def approve(self):
         with transaction.atomic():
-            # self.step_return['before_commit'] = {}
-            # for i, h in enumerate(self.step_define.before_commit):
-            #     result = h.run(self.arguments)
-            #     self.step_return['before_commit'][i] = result
+            # TODO:  事务里执行 hook, 根据StepDefine里定义的成功后的下一步，进行步骤创建, 如果没有后续步骤，则检测工单所有状态是否完结，来决定是否close工单
             print(self.step_define.success_stepdefines.all())
             for s in self.step_define.success_stepdefines.all():
                 Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
             self.step_status = 'success'
 
+    # 执行流程 触发hook 改变步骤状态， commit后外界通过回调，改变fail跟success状态并继续后续步骤. commit在api侧的实现需要加工返回可直接调用的http链接
     def commit(self):
         with transaction.atomic():
-            # self.step_return['before_commit'] = {}
-            # for i, h in enumerate(self.step_define.before_commit):
-            #     result = h.run(self.arguments)
-            #     self.step_return['before_commit'][i] = result
-            print(self.step_define.commit_stepdefines)
-            for s in self.step_define.commit_stepdefines.all():
-                Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
+            # TODO:  事务里执行 hook
+            pass
 
+    #
+
+    # 拒绝流程
     def reject(self):
         with transaction.atomic():
-            # self.step_return['before_reject'] = {}
-            # for i, h in enumerate(self.step_define.before_commit):
-            #     result = h.run(self.arguments)
-            #     self.step_return['before_reject'][i] = result
+            # TODO:  事务里执行 hook
             for s in self.step_define.reject_stepdefines.all():
                 Step.objects.create(step_define=s, workflow=self.workflow, arguments=self.arguments)
+
+    # commit后 回调
+    def commit_callback(self):
+        with transaction.atomic():
+            # TODO:  事务里执行 hook
+            pass
